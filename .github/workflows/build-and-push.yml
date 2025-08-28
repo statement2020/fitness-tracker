@@ -1,0 +1,101 @@
+name: Build and push
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+
+env:
+  TF_VERSION: "1.1.0"
+  AWS_REGION: "eu-west-2"
+
+jobs:
+  fitness-tracker:
+    if: "!contains(github.event.commits[0].message, '[Bump version to]')"
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+          cache: 'maven'
+
+#      - name: Maven settings
+#        uses: s4u/maven-settings-action@v2
+#        with:
+#          servers: '[{"id": "github", "username": "dummy", "password": "${{secrets.PACKAGE_SECRET}}" }]'
+#          githubServer: false
+
+      - name: Build artefact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat ~/.m2/settings.xml
+          mvn clean install
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ghcr.io/statement2020/fitness-tracker:1.0.${{github.run_number}},ghcr.io/statement2020/fitness-tracker:latest
+
+  commit-and-push:
+    needs: [ fitness-tracker ]
+    if: "!contains(github.event.commits[0].message, '[Bump version to]')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Set up JDK 19
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+          cache: 'maven'
+      - name: Update dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn versions:set -DnewVersion="1.0.${{github.run_number}}" -f job-tracker-api/pom.xml
+      - name: Commit & Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.CLASSIC_TOKEN }}
+        run: |
+          git config --global user.email "git@github.com"
+          git config --global user.name "Github Actions"
+          git add .
+          git commit -m "Bump version to 1.0.${{ github.run_number}}"
+          CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+          if [[ "$CURRENT_BRANCH" == "master" ]]; then
+            echo "master"
+            git push origin master
+          else 
+            echo "Pushing to branch"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
