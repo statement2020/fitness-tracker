@@ -1,6 +1,6 @@
 FROM amazoncorretto:21-alpine
 WORKDIR /app
-COPY target/fitness-tracker.jar app.jar
+COPY target/fitness-tracker-exe.jar app.jar
 
 # Expose port 8080
 EXPOSE 8080
