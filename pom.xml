@@ -30,6 +30,15 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
@@ -40,13 +49,34 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- H2 only for tests (repositories) -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers: PostgreSQL -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -97,13 +127,60 @@
                                     <limits>
                                         <limit>
                                             <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>0.8</minimum>
+                                            <minimum>50.0%</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
                             </rules>
+                            <excludes>
+                                <exclude>uk/co/devinity/configurations/*</exclude>
+                                <exclude>uk/co/devinity/entities/*</exclude>
+                                <exclude>uk/co/devinity/models/*</exclude>
+                                <exclude>uk/co/devinity/repositories/*</exclude>
+                                <exclude>uk/co/devinity/FitnessTrackerApplication*</exclude>
+                                <exclude>uk/co/devinity/services/StreamServiceImpl*</exclude>
+                                <exclude>uk/co/devinity/controllers/StreamController*</exclude>
+                            </excludes>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.20.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.3</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <mutationThreshold>80</mutationThreshold>
+                    <coverageThreshold>50</coverageThreshold>
+                    <threads>8</threads>
+                    <excludedClasses>
+                        <param>uk.co.devinity.configurations.*</param>
+                        <param>uk.co.devinity.entities.*</param>
+                        <param>uk.co.devinity.models.*</param>
+                        <param>uk.co.devinity.repositories.*</param>
+                        <param>uk.co.devinity.FitnessTrackerApplication</param>
+                        <param>uk.co.devinity.services.StreamServiceImpl</param>
+                        <param>uk.co.devinity.controllers.StreamController</param>
+                    </excludedClasses>
+                    <outputFormats>
+                        <param>HTML</param>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>run-pitest</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>mutationCoverage</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

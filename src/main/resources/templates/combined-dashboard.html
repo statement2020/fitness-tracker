@@ -3,96 +3,28 @@
 <head>
     <title>Fitness Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script>
 </head>
-<script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script>
 <body class="container py-4">
 <h1 class="mb-3">Fitness Tracker</h1>
+
 <div id="weightChart" style="width:100%;height:500px;"></div>
 <div id="caloriesChart" style="width:100%;height:500px;"></div>
 <a th:href="@{/}" class="btn btn-secondary ms-2">Back</a>
+<form th:action="@{/logout}" method="post" class="d-inline">
+    <button type="submit" class="btn btn-danger">Logout</button>
+</form>
+<script src="/js/render.js"></script>
 
-</body>
+<!-- Thymeleaf-inlined server data -->
 <script th:inline="javascript">
     /*<![CDATA[*/
     let users = /*[[${users}]]*/ '[]';
     let userEntriesMap = /*[[${userEntriesMap}]]*/ '{}';
-
-    const traces = [];
-
-    users.forEach(user => {
-        const entries = userEntriesMap[user.id] || [];
-        const dates = entries.map(e => e.date.split('T')[0]);
-
-        // Calories Burnt (bar)
-        traces.push({
-            x: dates,
-            y: entries.map(e => e.caloriesBurnt),
-            type: 'bar',
-            name: user.name + ' - Burnt'
-        });
-
-        // Calories Consumed (bar)
-        traces.push({
-            x: dates,
-            y: entries.map(e => e.caloriesConsumed),
-            type: 'bar',
-            name: user.name + ' - Consumed'
-        });
-
-        // %BMR Consumed (line, right axis)
-        traces.push({
-            x: dates,
-            y: entries.map(e => (e.caloriesConsumed / user.bmr) * 100),
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: user.name + ' - %BMR Consumed',
-            yaxis: 'y2'
-        });
-
-        // %BMR Burnt (line, right axis)
-        traces.push({
-            x: dates,
-            y: entries.map(e => (e.caloriesBurnt / user.bmr) * 100),
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: user.name + ' - %BMR Burnt',
-            yaxis: 'y2'
-        });
-    });
-
-    const weightChartTraces = users.map(user => {
-        const entries = userEntriesMap[user.id] || [];
-        return {
-            x: entries.map(e => e.date.split('T')[0]),
-            y: entries.map(e => e.weight),
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: user.name
-        };
-    });
-    const layout = {
-        barmode: 'group', // Burnt vs Consumed side by side
-        title: 'Calories & %BMR Over Time',
-        xaxis: {title: 'Date', type: 'category'},
-        yaxis: {title: 'Calories'},
-        yaxis2: {
-            title: '% of BMR',
-            overlaying: 'y',
-            side: 'right'
-        },
-        legend: {orientation: "h", y: -0.3},
-        margin: {t: 50, b: 100}
-    };
-    const weightLayout = {
-        barmode: 'group', // Burnt vs Consumed side by side
-        title: 'Weight Over Time',
-        xaxis: {title: 'Date', type: 'category'},
-        yaxis: {title: 'Weight'},
-        legend: {orientation: "h", y: -0.3},
-        margin: {t: 50, b: 100}
-    };
-
-    Plotly.newPlot('caloriesChart', traces, layout);
-    Plotly.newPlot('weightChart', weightChartTraces, weightLayout)
+    initFitnessCharts(users, userEntriesMap);
     /*]]>*/
 </script>
+
+<!-- Main chart & SSE update script -->
+</body>
+</html>

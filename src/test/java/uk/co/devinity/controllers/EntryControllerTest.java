@@ -2,122 +2,97 @@ package uk.co.devinity.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.beans.factory.annotation.Autowired;
-import uk.co.devinity.entities.Entry;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.testcontainers.containers.PostgreSQLContainer;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.services.StreamService;
 
-import java.time.LocalDate;
+import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@WebMvcTest(EntryController.class)
-class EntryControllerWebTest {
+class EntryControllerTest {
 
-    @Autowired
-    private MockMvc mvc;
 
-    @MockBean
+
     private UserRepository userRepository;
-
-    @MockBean
     private EntryRepository entryRepository;
-
-    private User alice;
-    private User bob;
+    private StreamService streamService;
+    private EntryController controller;
+    private Principal principal;
 
     @BeforeEach
-    void setup() {
-        alice = new User();
-        alice.setId(1L);
-        alice.setName("Alice");
-        alice.setBmr(1500);
-
-        bob = new User();
-        bob.setId(2L);
-        bob.setName("Bob");
-        bob.setBmr(1800);
+    void setUp() {
+        userRepository = mock(UserRepository.class);
+        entryRepository = mock(EntryRepository.class);
+        streamService = mock(StreamService.class);
+        controller = new EntryController(userRepository, entryRepository, streamService);
+        principal = () -> "alice@example.com";
     }
 
     @Test
-    void index_shouldRenderUsers() throws Exception {
-        given(userRepository.findAll()).willReturn(List.of(alice, bob));
+    void whenAdminPrincipal_thenGetUsersReturnsAll() throws Exception {
+        User admin = new User();
+        admin.setEmail("alice@example.com");
+        admin.setRoles(Set.of("ROLE_ADMIN"));
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(admin));
+        when(userRepository.findAll()).thenReturn(List.of(admin));
 
-        mvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("users"))
-                .andExpect(view().name("index"));
+        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
+        m.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<User> result = (List<User>) m.invoke(controller, principal);
+
+        assertEquals(1, result.size());
     }
 
     @Test
-    void entryForm_shouldPrefillTodayAndBindUser() throws Exception {
-        given(userRepository.findById(1L)).willReturn(Optional.of(alice));
+    void whenNormalPrincipal_thenGetUsersReturnsSelf() throws Exception {
+        User user = new User();
+        user.setEmail("alice@example.com");
+        user.setRoles(Set.of("ROLE_USER"));
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
 
-        mvc.perform(get("/entry/1"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("user"))
-                .andExpect(model().attributeExists("entry"))
-                .andExpect(view().name("entry-form"));
+        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
+        m.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<User> result = (List<User>) m.invoke(controller, principal);
+
+        assertEquals(1, result.size());
+        assertEquals("alice@example.com", result.get(0).getEmail());
     }
 
     @Test
-    void submitEntry_shouldAttachUserAndRedirect() throws Exception {
-        given(userRepository.findById(1L)).willReturn(Optional.of(alice));
+    void whenUserNotFound_thenGetUsersThrows() throws Exception {
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.empty());
+        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
+        m.setAccessible(true);
 
-        mvc.perform(post("/entry/1")
-                        .param("date", LocalDate.now().toString())
-                        .param("caloriesConsumed", "2000")
-                        .param("caloriesBurnt", "500")
-                        .param("weight", "70.5"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/combined-dashboard"));
-
-        ArgumentCaptor<Entry> captor = ArgumentCaptor.forClass(Entry.class);
-        verify(entryRepository).save(captor.capture());
-        Entry saved = captor.getValue();
-        assertThat(saved.getUser()).isEqualTo(alice);
-        assertThat(saved.getCaloriesConsumed()).isEqualTo(2000);
-        assertThat(saved.getCaloriesBurnt()).isEqualTo(500);
-        assertThat(saved.getWeight()).isEqualTo(70.5);
+        Exception ex = assertThrows(Exception.class, () -> m.invoke(controller, principal));
+        assertTrue(ex.getCause() instanceof UsernameNotFoundException);
     }
 
     @Test
-    void combinedDashboard_shouldBuildModel() throws Exception {
-        given(userRepository.findAll()).willReturn(List.of(alice, bob));
+    void whenNormalUserWithDifferentEmail_thenGetUsersThrowsAccessDenied() throws Exception {
+        User user = new User();
+        user.setEmail("someoneelse@example.com");
+        user.setRoles(Set.of("ROLE_USER"));
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
 
-        Entry e1 = new Entry();
-        e1.setUser(alice);
-        e1.setDate(LocalDate.of(2025, 8, 25));
-        e1.setCaloriesConsumed(2000);
-        e1.setCaloriesBurnt(450);
-        e1.setWeight(70.2);
-
-        Entry e2 = new Entry();
-        e2.setUser(alice);
-        e2.setDate(LocalDate.of(2025, 8, 26));
-        e2.setCaloriesConsumed(2100);
-        e2.setCaloriesBurnt(500);
-        e2.setWeight(70.0);
-
-        given(entryRepository.findByUserOrderByDateAsc(alice)).willReturn(List.of(e1, e2));
-        given(entryRepository.findByUserOrderByDateAsc(bob)).willReturn(List.of());
-
-        mvc.perform(get("/combined-dashboard"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("users"))
-                .andExpect(model().attributeExists("userEntriesMap"))
-                .andExpect(view().name("combined-dashboard"));
+        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
+        m.setAccessible(true);
+        Exception ex = assertThrows(Exception.class, () -> m.invoke(controller, principal));
+        assertTrue(ex.getCause() instanceof AccessDeniedException);
     }
 }
