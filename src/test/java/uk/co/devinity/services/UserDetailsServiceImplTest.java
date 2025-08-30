@@ -1,0 +1,49 @@
+package uk.co.devinity.services;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import uk.co.devinity.entities.User;
+import uk.co.devinity.repositories.UserRepository;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class UserDetailsServiceImplTest {
+
+    private UserRepository userRepository;
+    private UserDetailsServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        userRepository = mock(UserRepository.class);
+        service = new UserDetailsServiceImpl(userRepository);
+    }
+
+    @Test
+    void whenUserExists_thenReturnUserDetails() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setPassword("encodedPwd");
+        user.setRoles(Set.of("ROLE_USER"));
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        UserDetails details = service.loadUserByUsername("test@example.com");
+
+        assertEquals("test@example.com", details.getUsername());
+        assertEquals("encodedPwd", details.getPassword());
+        assertTrue(details.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
+    }
+
+    @Test
+    void whenUserDoesNotExist_thenThrowException() {
+        when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("missing@example.com"));
+    }
+}
