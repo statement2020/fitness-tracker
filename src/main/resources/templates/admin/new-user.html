@@ -1,37 +1,72 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Create New User</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="container py-4">
-<h1 class="mb-3">Create New User</h1>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+<div th:replace="fragments/navbar :: navbar" class="sticky top-0 z-50"></div>
+<div class="flex items-center justify-center min-h-screen px-1">
 
-<form th:action="@{/admin/users}" th:object="${user}" method="post">
-    <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="text" th:field="*{email}" class="form-control" required/>
+    <!-- Card -->
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
+        <h1 class="text-2xl font-bold text-indigo-700 mb-6">👤 Create New User</h1>
+
+        <form th:action="@{/admin/users}" th:object="${user}" method="post" class="space-y-5">
+            <!-- Email -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Email</label>
+                <input type="text" th:field="*{email}" required
+                       class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+            </div>
+
+            <!-- Name -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Name</label>
+                <input type="text" th:field="*{name}" required
+                       class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Password</label>
+                <input type="password" th:field="*{password}" required
+                       class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+            </div>
+
+            <!-- Starting BMR -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Starting BMR</label>
+                <input type="number" step="0.1" th:field="*{bmr}" required
+                       class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+            </div>
+
+            <!-- Roles -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Roles</label>
+                <div class="space-y-2">
+                    <div th:each="role : ${allRoles}" class="flex items-center space-x-2">
+                        <input type="checkbox" th:value="${role}" th:field="*{roles}" id="role__${role}"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label th:for="${role}" th:text="${role}" class="text-gray-700"></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-between items-center pt-4">
+                <a th:href="@{/admin/users}"
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg shadow">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow">
+                    ✅ Create User
+                </button>
+            </div>
+        </form>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input type="text" th:field="*{name}" class="form-control" required/>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" th:field="*{password}" class="form-control" required/>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Starting BMR</label>
-        <input type="number" step="0.1" th:field="*{bmr}" class="form-control" required/>
-    <div class="mb-3">
-        <label class="form-label">Roles</label>
-        <div class="form-check" th:each="role : ${allRoles}">
-            <input class="form-check-input" type="checkbox" th:value="${role}" th:field="*{roles}" id="role__${role}"/>
-            <label class="form-check-label" th:for="${role}" th:text="${role}"></label>
-        </div>
-    </div>
-    <button type="submit" class="btn btn-success">Create User</button>
-    <a th:href="@{/admin/users}" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 </body>
 </html>
