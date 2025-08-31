@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>uk.co.devinity</groupId>
     <artifactId>fitness-tracker</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.10</version>
 
     <properties>
         <java.version>17</java.version>
