@@ -8,8 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.UserRepository;
 
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -17,13 +15,13 @@ class AdminControllerTest {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
-    private AdminController controller;
+    private AdminController underTest;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        controller = new AdminController(userRepository, passwordEncoder);
+        underTest = new AdminController(userRepository, passwordEncoder);
     }
 
     @Test
@@ -33,7 +31,7 @@ class AdminControllerTest {
         u.setPassword("plaintext");
         u.setRoles(null);
 
-        controller.createUser(u);
+        underTest.createUser(u);
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
@@ -46,7 +44,7 @@ class AdminControllerTest {
 
     @Test
     void whenNewUserForm_thenModelPrepared() {
-        String view = controller.newUserForm(mock(org.springframework.ui.Model.class));
+        String view = underTest.newUserForm(mock(org.springframework.ui.Model.class));
         assertThat(view).isEqualTo("admin/new-user");
     }
 
@@ -57,11 +55,11 @@ class AdminControllerTest {
         u.setPassword("plaintext");
         u.setRoles(null);
 
-        controller.createUser(u);
+        underTest.createUser(u);
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
-        String view = controller.listUsers(mock(org.springframework.ui.Model.class));
+        String view = underTest.listUsers(mock(org.springframework.ui.Model.class));
         assertThat(view).isEqualTo("admin/users");
     }
 }

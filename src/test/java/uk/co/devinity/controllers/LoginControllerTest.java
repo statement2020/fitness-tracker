@@ -7,8 +7,8 @@ class LoginControllerTest {
 
     @Test
     void whenGetLogin_thenReturnLoginView() {
-        LoginController c = new LoginController();
-        String view = c.login();
+        LoginController underTest = new LoginController();
+        String view = underTest.login();
         assertThat(view).isEqualTo("login");
     }
 }

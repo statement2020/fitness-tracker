@@ -59,12 +59,6 @@ class EntryControllerTestIT {
     @MockBean
     private StreamService streamService;
 
-//    @BeforeEach
-//    void setUp() {
-//        delete();
-//        createUser();
-//    }
-
     public void createUser() {
         final var alice = new User();
         alice.setEmail("alice@example.com");
