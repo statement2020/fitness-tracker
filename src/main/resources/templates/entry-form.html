@@ -1,35 +1,66 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add Entry</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="container py-4">
-<h2 th:text="'Add Entry for ' + ${user.name}"></h2>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+<div th:replace="fragments/navbar :: navbar" class="sticky top-0 z-50"></div>
 
-<form th:action="@{'/entry/' + ${user.id}}" th:object="${entry}" method="post" class="mt-3">
-    <div class="mb-3">
-        <label class="form-label">Date</label>
-        <input type="date" th:field="*{date}" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Calories Consumed</label>
-        <input type="number" step="1" th:field="*{caloriesConsumed}" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Calories Burnt</label>
-        <input type="number" step="1" th:field="*{caloriesBurnt}" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Weight (kg)</label>
-        <input type="number" step="0.1" th:field="*{weight}" class="form-control" required>
+<div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-indigo-700"
+            th:text="'Add Entry for ' + ${user.name}">
+        </h2>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit"
+                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow">
+                Logout
+            </button>
+        </form>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a th:href="@{/}" class="btn btn-secondary ms-2">Cancel</a>
-    <form th:action="@{/logout}" method="post" class="d-inline">
-        <button type="submit" class="btn btn-danger">Logout</button>
+    <!-- Entry Form -->
+    <form th:action="@{'/entry/' + ${user.id}}" th:object="${entry}" method="post" class="space-y-5">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input type="date" th:field="*{date}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Calories Consumed</label>
+            <input type="number" step="1" th:field="*{caloriesConsumed}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Calories Burnt</label>
+            <input type="number" step="1" th:field="*{caloriesBurnt}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+            <input type="number" step="0.1" th:field="*{weight}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex space-x-3 pt-4">
+            <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow">
+                Save
+            </button>
+            <a th:href="@{/}"
+               class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg shadow">
+                Cancel
+            </a>
+        </div>
     </form>
-</form>
+</div>
+
 </body>
 </html>
