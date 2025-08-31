@@ -2,6 +2,8 @@ package uk.co.devinity.services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import uk.co.devinity.entities.User;
@@ -15,13 +17,16 @@ import static org.mockito.Mockito.*;
 
 class UserDetailsServiceImplTest {
 
+    @Mock
     private UserRepository userRepository;
-    private UserDetailsServiceImpl service;
+
+    @InjectMocks
+    private UserDetailsServiceImpl underTest;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        service = new UserDetailsServiceImpl(userRepository);
+        underTest = new UserDetailsServiceImpl(userRepository);
     }
 
     @Test
@@ -33,7 +38,7 @@ class UserDetailsServiceImplTest {
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
-        UserDetails details = service.loadUserByUsername("test@example.com");
+        UserDetails details = underTest.loadUserByUsername("test@example.com");
 
         assertEquals("test@example.com", details.getUsername());
         assertEquals("encodedPwd", details.getPassword());
@@ -44,6 +49,6 @@ class UserDetailsServiceImplTest {
     void whenUserDoesNotExist_thenThrowException() {
         when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("missing@example.com"));
+        assertThrows(UsernameNotFoundException.class, () -> underTest.loadUserByUsername("missing@example.com"));
     }
 }

@@ -34,10 +34,6 @@ class ProfileControllerTest {
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        profileService = mock(ProfileService.class);
-        controller = new ProfileController(userRepository, profileService);
-
         userDetails = org.springframework.security.core.userdetails.User
                 .withUsername("alice@example.com")
                 .password("password")

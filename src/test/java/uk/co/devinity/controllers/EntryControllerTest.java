@@ -2,12 +2,12 @@ package uk.co.devinity.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.testcontainers.containers.PostgreSQLContainer;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
@@ -19,27 +19,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EntryControllerTest {
 
-
-
+    @Mock
     private UserRepository userRepository;
-    private EntryRepository entryRepository;
-    private StreamService streamService;
-    private EntryController controller;
-    private Principal principal;
 
-    @BeforeEach
-    void setUp() {
-        userRepository = mock(UserRepository.class);
-        entryRepository = mock(EntryRepository.class);
-        streamService = mock(StreamService.class);
-        controller = new EntryController(userRepository, entryRepository, streamService);
-        principal = () -> "alice@example.com";
-    }
+    @Mock
+    private EntryRepository entryRepository;
+
+    @Mock
+    private StreamService streamService;
+
+    @InjectMocks
+    private EntryController underTest;
+
+    private Principal principal = () -> "alice@example.com";
 
     @Test
     void whenAdminPrincipal_thenGetUsersReturnsAll() throws Exception {
@@ -52,7 +53,7 @@ class EntryControllerTest {
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<User> result = (List<User>) m.invoke(controller, principal);
+        List<User> result = (List<User>) m.invoke(underTest, principal);
 
         assertEquals(1, result.size());
     }
@@ -67,7 +68,7 @@ class EntryControllerTest {
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<User> result = (List<User>) m.invoke(controller, principal);
+        List<User> result = (List<User>) m.invoke(underTest, principal);
 
         assertEquals(1, result.size());
         assertEquals("alice@example.com", result.get(0).getEmail());
@@ -79,7 +80,7 @@ class EntryControllerTest {
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
 
-        Exception ex = assertThrows(Exception.class, () -> m.invoke(controller, principal));
+        Exception ex = assertThrows(Exception.class, () -> m.invoke(underTest, principal));
         assertTrue(ex.getCause() instanceof UsernameNotFoundException);
     }
 
@@ -92,7 +93,7 @@ class EntryControllerTest {
 
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
-        Exception ex = assertThrows(Exception.class, () -> m.invoke(controller, principal));
+        Exception ex = assertThrows(Exception.class, () -> m.invoke(underTest, principal));
         assertTrue(ex.getCause() instanceof AccessDeniedException);
     }
 }

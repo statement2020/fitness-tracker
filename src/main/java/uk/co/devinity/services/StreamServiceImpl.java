@@ -12,10 +12,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Service
 public class StreamServiceImpl implements StreamService {
     private final List<SseEmitter> emitters;
-    private final EntryRepository entryRepository;
 
-    public StreamServiceImpl(EntryRepository entryRepository) {
-        this.entryRepository = entryRepository;
+    public StreamServiceImpl() {
         emitters = new CopyOnWriteArrayList<>();
     }
 
