@@ -43,7 +43,7 @@ class ProfileServiceImplTest {
         user.setEmail(email);
         user.setPassword("encodedOldPass");
 
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue(email)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(currentPassword, user.getPassword())).thenReturn(true);
         when(passwordEncoder.encode(newPassword)).thenReturn(encodedNewPassword);
 
@@ -58,7 +58,7 @@ class ProfileServiceImplTest {
 
     @Test
     void updatePassword_userNotFound_throwsException() {
-        when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmailAndActiveIsTrue("missing@example.com")).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> underTest.updatePassword("missing@example.com", "pass", "new", "new"));
@@ -73,7 +73,7 @@ class ProfileServiceImplTest {
         user.setEmail("test@example.com");
         user.setPassword("encodedOldPass");
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPass", "encodedOldPass")).thenReturn(false);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -89,7 +89,7 @@ class ProfileServiceImplTest {
         user.setEmail("test@example.com");
         user.setPassword("encodedOldPass");
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("oldPass", "encodedOldPass")).thenReturn(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,

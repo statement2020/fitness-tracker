@@ -35,12 +35,76 @@
                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
             </div>
 
-            <!-- Starting BMR -->
+            <!-- Weight -->
             <div>
-                <label class="block text-gray-700 font-medium mb-1">Starting BMR</label>
-                <input type="number" step="0.1" th:field="*{bmr}" required
+                <label class="block text-gray-700 font-medium mb-1">Weight (kg)</label>
+                <input type="number" step="0.1" th:field="*{weight}" required
                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
             </div>
+
+            <!-- Height -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Height (cm)</label>
+                <input type="number" step="0.1" th:field="*{height}" required
+                       class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+            </div>
+
+            <!-- Date of Birth -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Date of Birth</label>
+                <input type="date" th:field="*{dateOfBirth}" required
+                       class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+            </div>
+
+            <!-- Sex -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Sex</label>
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="MALE" th:field="*{sex}" id="sex_male"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="sex_male" class="text-gray-700">Male</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="FEMALE" th:field="*{sex}" id="sex_female"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="sex_female" class="text-gray-700">Female</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Level -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Activity Level</label>
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="SEDENTARY" th:field="*{activityLevel}" id="activity_sedentary"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="activity_sedentary" class="text-gray-700">Sedentary</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="LIGHTLY_ACTIVE" th:field="*{activityLevel}" id="activity_lightly"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="activity_lightly" class="text-gray-700">Lightly Active</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="MODERATELY_ACTIVE" th:field="*{activityLevel}" id="activity_moderately"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="activity_moderately" class="text-gray-700">Moderately Active</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="VERY_ACTIVE" th:field="*{activityLevel}" id="activity_very"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="activity_very" class="text-gray-700">Very Active</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" th:value="EXTRA_ACTIVE" th:field="*{activityLevel}" id="activity_extra"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+                        <label for="activity_extra" class="text-gray-700">Extra Active</label>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Roles -->
             <div>

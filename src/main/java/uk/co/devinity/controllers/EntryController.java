@@ -12,27 +12,30 @@ import uk.co.devinity.entities.Entry;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.services.EntryService;
 import uk.co.devinity.services.StreamService;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 public class EntryController {
     private final UserRepository userRepository;
     private final EntryRepository entryRepository;
     private final StreamService streamService;
+    private final EntryService entryService;
 
-    public EntryController(UserRepository userRepository, EntryRepository entryRepository, StreamService streamService) {
+    public EntryController(UserRepository userRepository,
+                           EntryRepository entryRepository,
+                           StreamService streamService,
+                           EntryService entryService) {
         this.userRepository = userRepository;
         this.entryRepository = entryRepository;
         this.streamService = streamService;
+        this.entryService = entryService;
     }
 
     @GetMapping("/")
@@ -69,25 +72,7 @@ public class EntryController {
         Map<Long, List<Map<String, Object>>> userEntriesMap = new HashMap<>();
 
         for (User user : users) {
-            List<Entry> entries = entryRepository.findByUserOrderByDateAsc(user).stream()
-                    .collect(Collectors.toMap(
-                            Entry::getDate, // key: just the date
-                            e -> e,                         // value: the entry
-                            (existing, replacement) -> replacement // keep the last entry if duplicate
-                    ))
-                    .values().stream()
-                    .sorted(Comparator.comparing(Entry::getDate))
-                    .toList();
-
-            List<Map<String, Object>> entryData = new ArrayList<>();
-            for (Entry e : entries) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("date", e.getDate().toString());
-                map.put("weight", e.getWeight());
-                map.put("caloriesConsumed", e.getCaloriesConsumed());
-                map.put("caloriesBurnt", e.getCaloriesBurnt());
-                entryData.add(map);
-            }
+            var entryData = entryService.getEntriesForUser(user);
             userEntriesMap.put(user.getId(), entryData);
         }
 
@@ -98,7 +83,7 @@ public class EntryController {
     }
 
     private List<User> getUsers(Principal principal) {
-        User currentUser = userRepository.findByEmail(principal.getName())
+        User currentUser = userRepository.findByEmailAndActiveIsTrue(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (!currentUser.getRoles().contains("ROLE_ADMIN") && !currentUser.getEmail().equals(principal.getName())) {
@@ -106,7 +91,10 @@ public class EntryController {
         }
         List<User> users;
         if (currentUser.getRoles().contains("ROLE_ADMIN")) {
-            users = userRepository.findAll();
+            users = userRepository.findAllByActiveIsTrueOrderByNameAsc()
+                    .stream()
+                    .filter(user -> !user.getName().equals("Admin"))
+                    .toList();
         } else {
             users = List.of(currentUser);
         }

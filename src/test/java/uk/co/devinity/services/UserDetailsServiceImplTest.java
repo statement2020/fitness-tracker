@@ -36,7 +36,7 @@ class UserDetailsServiceImplTest {
         user.setPassword("encodedPwd");
         user.setRoles(Set.of("ROLE_USER"));
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("test@example.com")).thenReturn(Optional.of(user));
 
         UserDetails details = underTest.loadUserByUsername("test@example.com");
 
@@ -47,7 +47,7 @@ class UserDetailsServiceImplTest {
 
     @Test
     void whenUserDoesNotExist_thenThrowException() {
-        when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmailAndActiveIsTrue("missing@example.com")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class, () -> underTest.loadUserByUsername("missing@example.com"));
     }

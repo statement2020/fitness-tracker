@@ -36,7 +36,7 @@ function initFitnessCharts(users, userEntriesMap) {
         traceIndexMap[user.id].pctConsumed = caloriesTraceCounter;
         traces.push({
             x: dates,
-            y: entries.map(e => (e.caloriesConsumed / user.bmr) * 100),
+            y: entries.map(e => (e.caloriesConsumed / e.bmr) * 100),
             type: 'scatter',
             mode: 'lines+markers',
             name: user.name + ' - %BMR Consumed',
@@ -48,10 +48,22 @@ function initFitnessCharts(users, userEntriesMap) {
         traceIndexMap[user.id].pctBurnt = caloriesTraceCounter;
         traces.push({
             x: dates,
-            y: entries.map(e => (e.caloriesBurnt / user.bmr) * 100),
+            y: entries.map(e => (e.caloriesBurnt / e.bmr) * 100),
             type: 'scatter',
             mode: 'lines+markers',
             name: user.name + ' - %BMR Burnt',
+            yaxis: 'y2'
+        });
+        caloriesTraceCounter++;
+
+        // BMR
+        traceIndexMap[user.id].bmr = caloriesTraceCounter;
+        traces.push({
+            x: dates,
+            y: entries.map(e => e.bmr),
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: user.name + ' - BMR',
             yaxis: 'y2'
         });
         caloriesTraceCounter++;
@@ -101,8 +113,8 @@ function initFitnessCharts(users, userEntriesMap) {
     eventSource.addEventListener("new-entry", function (event) {
         const entry = JSON.parse(event.data);
         const dateOnly = entry.date.split("T")[0];
-        const consumedPct = (entry.caloriesConsumed / entry.user.bmr) * 100;
-        const burntPct = (entry.caloriesBurnt / entry.user.bmr) * 100;
+        const consumedPct = (entry.caloriesConsumed / entry.bmr) * 100;
+        const burntPct = (entry.caloriesBurnt / entry.bmr) * 100;
 
         const idx = traceIndexMap[entry.user.id];
         if (!idx) return;

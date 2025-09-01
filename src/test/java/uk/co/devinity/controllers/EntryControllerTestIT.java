@@ -1,8 +1,5 @@
 package uk.co.devinity.controllers;
 
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import uk.co.devinity.entities.Entry;
+import uk.co.devinity.entities.Sex;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
@@ -59,11 +57,15 @@ class EntryControllerTestIT {
     @MockBean
     private StreamService streamService;
 
-    public void createUser() {
+    private void createUser() {
         final var alice = new User();
         alice.setEmail("alice@example.com");
         alice.setName("Alice");
-        alice.setBmr(1500);
+        alice.setPassword("encodedPass");
+        alice.setSex(Sex.FEMALE);
+        alice.setActive(true);
+        alice.setHeight(165);
+        alice.setWeight(60);
         alice.setRoles(Set.of("ROLE_USER"));
         userRepository.saveAndFlush(alice);
     }
@@ -77,7 +79,7 @@ class EntryControllerTestIT {
     @Test
     void whenGetEntryForm_thenModelContainsUserAndEntry() throws Exception {
         createUser();
-        final var user = userRepository.findByEmail("alice@example.com");
+        final var user = userRepository.findByEmailAndActiveIsTrue("alice@example.com");
         mvc.perform(get("/entry/" + user.get().getId()))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("user"))
@@ -90,7 +92,7 @@ class EntryControllerTestIT {
     @Test
     void whenSubmitEntry_thenSavedAndBroadcasted() throws Exception {
         createUser();
-        final var user = userRepository.findByEmail("alice@example.com");
+        final var user = userRepository.findByEmailAndActiveIsTrue("alice@example.com");
         mvc.perform(post("/entry/" + user.get().getId())
                         .with(csrf())
                         .param("date", LocalDate.now().toString())

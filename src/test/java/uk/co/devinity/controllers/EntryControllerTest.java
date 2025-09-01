@@ -1,6 +1,5 @@
 package uk.co.devinity.controllers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +21,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,8 +45,10 @@ class EntryControllerTest {
         User admin = new User();
         admin.setEmail("alice@example.com");
         admin.setRoles(Set.of("ROLE_ADMIN"));
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(admin));
-        when(userRepository.findAll()).thenReturn(List.of(admin));
+        admin.setActive(true);
+        admin.setName("admin");
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(admin));
+        when(userRepository.findAllByActiveIsTrueOrderByNameAsc()).thenReturn(List.of(admin));
 
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
@@ -63,7 +63,8 @@ class EntryControllerTest {
         User user = new User();
         user.setEmail("alice@example.com");
         user.setRoles(Set.of("ROLE_USER"));
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        user.setActive(true);
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
 
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
@@ -76,7 +77,7 @@ class EntryControllerTest {
 
     @Test
     void whenUserNotFound_thenGetUsersThrows() throws Exception {
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.empty());
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);
 
@@ -89,7 +90,7 @@ class EntryControllerTest {
         User user = new User();
         user.setEmail("someoneelse@example.com");
         user.setRoles(Set.of("ROLE_USER"));
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
 
         Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
         m.setAccessible(true);

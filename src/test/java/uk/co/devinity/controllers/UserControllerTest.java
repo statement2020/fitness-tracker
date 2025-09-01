@@ -39,7 +39,8 @@ class UserControllerTest {
 
     @Test
     void saveUser_ShouldSaveUser_AndRedirectToIndex() {
-        User user = new User("Alice", 1500);
+        User user = new User();
+        user.setName("Alice");
 
         String viewName = underTest.saveUser(user);
 

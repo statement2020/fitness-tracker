@@ -14,6 +14,8 @@ public class MeasurementEntry {
     private double weight;
     private double caloriesConsumed;
     private double caloriesBurnt;
+    private double bmr;
+
 
     public Long getId() {
         return id;
@@ -61,5 +63,13 @@ public class MeasurementEntry {
 
     public void setCaloriesBurnt(double caloriesBurnt) {
         this.caloriesBurnt = caloriesBurnt;
+    }
+
+    public double getBmr() {
+        return bmr;
+    }
+
+    public void setBmr(double bmr) {
+        this.bmr = bmr;
     }
 }

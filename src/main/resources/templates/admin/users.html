@@ -28,7 +28,7 @@
             <th class="py-2 px-4 font-semibold text-gray-700">Email</th>
             <th class="py-2 px-4 font-semibold text-gray-700">Name</th>
             <th class="py-2 px-4 font-semibold text-gray-700">Roles</th>
-            <th class="py-2 px-4 font-semibold text-gray-700">Initial BMR</th>
+            <th class="py-2 px-4 font-semibold text-gray-700">Active</th>
         </tr>
         </thead>
         <tbody>
@@ -37,19 +37,25 @@
             <td class="py-2 px-4 text-gray-700" th:text="${user.email}"></td>
             <td class="py-2 px-4 text-gray-700" th:text="${user.name}"></td>
             <td class="py-2 px-4 text-gray-700" th:text="${user.roles}"></td>
-            <td class="py-2 px-4 text-gray-700" th:text="${user.bmr}"></td>
+            <form th:if="${user.active}" th:action="@{'/admin/users/' + ${user.id} + '/deactivate'}" method="post">
+                <td class="py-2 px-4 text-gray-700">
+                    <button type="submit"
+                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow">
+                        Deactivate
+                    </button>
+                </td>
+            </form>
+            <form th:if="${!user.active}" th:action="@{'/admin/users/' + ${user.id} + '/activate'}" method="post">
+                <td class="py-2 px-4 text-gray-700">
+                    <button type="submit"
+                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow">
+                        Activate
+                    </button>
+                </td>
+            </form>
         </tr>
         </tbody>
     </table>
 </div>
-
-<!-- Footer Navigation -->
-<div class="mt-6">
-    <a th:href="@{/}"
-       class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg shadow">
-        ⬅ Back to Dashboard
-    </a>
-</div>
-
 </body>
 </html>
