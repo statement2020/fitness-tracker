@@ -48,7 +48,7 @@ class ProfileControllerTest {
         user.setName("Alice");
         user.setRoles(Set.of("ROLE_USER"));
 
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
 
         Model model = new ConcurrentModel();
         String view = controller.profile(userDetails, model);
@@ -60,7 +60,7 @@ class ProfileControllerTest {
 
     @Test
     void whenProfileUserNotFound_thenThrowsException() {
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.empty());
         Model model = new ConcurrentModel();
 
         assertThrows(IllegalArgumentException.class,
@@ -71,7 +71,7 @@ class ProfileControllerTest {
     void whenResetPasswordSuccess_thenSuccessMessageSet() {
         User user = new User();
         user.setEmail("alice@example.com");
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
 
         Model model = new ConcurrentModel();
         String view = controller.resetPassword(
@@ -94,7 +94,7 @@ class ProfileControllerTest {
     void whenResetPasswordFails_thenErrorMessageSet() {
         User user = new User();
         user.setEmail("alice@example.com");
-        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
         doThrow(new IllegalArgumentException("Current password is incorrect."))
                 .when(profileService).updatePassword(any(), any(), any(), any());
 

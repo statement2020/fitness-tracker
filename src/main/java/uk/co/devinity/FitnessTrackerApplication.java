@@ -27,14 +27,15 @@ public class FitnessTrackerApplication {
     public void run() throws Exception {
         String adminUsername = "admin@fitnesstracker.com";
 
-        userRepository.findByEmail(adminUsername).ifPresentOrElse(
+        userRepository.findByEmailAndActiveIsTrue(adminUsername).ifPresentOrElse(
                 user -> System.out.println("Admin user already exists: " + adminUsername),
                 () -> {
                     User admin = new User();
+                    admin.setName("Admin");
                     admin.setEmail(adminUsername);
                     admin.setPassword(passwordEncoder.encode("admin123"));
                     admin.setRoles(Set.of("ROLE_ADMIN", "ROLE_USER"));
-
+                    admin.setActive(true);
                     userRepository.save(admin);
                     System.out.println("Admin user created: " + adminUsername);
 

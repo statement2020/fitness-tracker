@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler((request, response, authentication) -> {
+
                             // Extract roles
                             var roles = authentication.getAuthorities()
                                     .stream()

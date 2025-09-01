@@ -43,7 +43,28 @@ public class AdminController {
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             user.setRoles(Set.of("ROLE_USER"));
         }
+        user.setActive(true);
         userRepository.save(user);
         return "redirect:/admin/users";
     }
+
+    @PostMapping("/users/{id}/activate")
+    public String activateUser(@ModelAttribute("id") Long id) {
+        userRepository.findById(id).ifPresent(user -> {
+            user.setActive(true);
+            userRepository.save(user);
+        });
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{id}/deactivate")
+    public String deactivateUser(@ModelAttribute("id") Long id) {
+        userRepository.findById(id).ifPresent(user -> {
+            user.setActive(false);
+            userRepository.save(user);
+        });
+        return "redirect:/admin/users";
+    }
+
+
 }

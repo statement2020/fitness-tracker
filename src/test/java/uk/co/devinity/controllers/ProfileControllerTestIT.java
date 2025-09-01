@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
+import uk.co.devinity.entities.Sex;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.UserRepository;
 import uk.co.devinity.services.ProfileService;
@@ -58,7 +59,10 @@ class ProfileControllerTestIT {
         alice.setEmail("alice@example.com");
         alice.setName("Alice");
         alice.setPassword("encodedPass");
-        alice.setBmr(1500);
+        alice.setSex(Sex.FEMALE);
+        alice.setActive(true);
+        alice.setHeight(165);
+        alice.setWeight(60);
         alice.setRoles(Set.of("ROLE_USER"));
         userRepository.saveAndFlush(alice);
     }

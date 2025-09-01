@@ -27,7 +27,7 @@ public class ProfileController {
 
     @GetMapping
     public String profile(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        User user = userRepository.findByEmailAndActiveIsTrue(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         model.addAttribute("user", user);
         return "profile/user-profile";
@@ -47,9 +47,10 @@ public class ProfileController {
             model.addAttribute("errorMessage", e.getMessage());
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        User user = userRepository.findByEmailAndActiveIsTrue(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         model.addAttribute("user", user);
+        model.addAttribute("bmr", profileService.getLatestBmr(user));
 
         return "profile/user-profile";
     }
