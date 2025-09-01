@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+
+<div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg mx-4 my-8">
+    <h1 class="text-2xl font-bold text-indigo-700 mb-6 text-center">🔐 Register</h1>
+
+    <form th:action="@{/register}" th:object="${user}" method="post" class="space-y-5">
+
+        <!-- Name -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Name</label>
+            <input type="text" th:field="*{name}" required
+                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Email</label>
+            <input type="email" th:field="*{email}" required
+                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+        </div>
+
+        <!-- Password -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Password</label>
+            <input type="password" th:field="*{password}" required
+                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+        </div>
+
+        <!-- Weight -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Weight (kg)</label>
+            <input type="number" step="0.1" th:field="*{weight}" required
+                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+        </div>
+
+        <!-- Height -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Height (cm)</label>
+            <input type="number" step="0.1" th:field="*{height}" required
+                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+        </div>
+
+        <!-- Date of Birth -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-1">Date of Birth</label>
+            <input type="date" th:field="*{dateOfBirth}" required
+                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+        </div>
+
+        <!-- Sex -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-2">Sex</label>
+            <div class="space-y-2">
+                <div th:each="sex : ${T(uk.co.devinity.entities.Sex).values()}" class="flex items-center space-x-2">
+                    <input type="radio" th:value="${sex}" th:field="*{sex}" th:id="${sex}" required
+                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
+                    <label th:for="${sex}" th:text="${sex.name()}" class="text-gray-700"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Level -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-2">Activity Level</label>
+            <div class="space-y-2">
+                <div th:each="level : ${T(uk.co.devinity.entities.ActivityLevel).values()}" class="flex items-center space-x-2">
+                    <input type="radio" th:value="${level}" th:field="*{activityLevel}" th:id="${level}" required
+                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
+                    <label th:for="${level}" th:text="${level.name()}" class="text-gray-700"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4 text-center">
+            <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition-colors">
+                Register
+            </button>
+        </div>
+    </form>
+</div>
+</body>
+</html>
