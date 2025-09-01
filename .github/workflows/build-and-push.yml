@@ -76,7 +76,7 @@ jobs:
           mvn versions:set -DnewVersion="1.0.${{github.run_number}}"
       - name: Commit & Push
         env:
-          GITHUB_TOKEN: ${{ secrets.CLASSIC_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.email "git@github.com"
           git config --global user.name "Github Actions"
