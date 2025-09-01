@@ -1,8 +1,9 @@
 name: Build and push
 
 on:
-  push:
+  pull_request:
     branches: [ master ]
+
 
 env:
   TF_VERSION: "1.1.0"
@@ -51,42 +52,3 @@ jobs:
           file: Dockerfile
           push: true
           tags: ghcr.io/statement2020/fitness-tracker:1.0.${{github.run_number}},ghcr.io/statement2020/fitness-tracker:latest
-
-  commit-and-push:
-    needs: [ fitness-tracker ]
-    if: "!contains(github.event.commits[0].message, '[Bump version to]')"
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'oracle'
-          cache: 'maven'
-      - name: Update dependencies
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mvn versions:set -DnewVersion="1.0.${{github.run_number}}"
-      - name: Commit & Push
-        env:
-          GITHUB_TOKEN: ${{ secrets.CLASSIC_TOKEN }}
-        run: |
-          git config --global user.email "git@github.com"
-          git config --global user.name "Github Actions"
-          git add .
-          git commit -m "Bump version to 1.0.${{ github.run_number}}"
-          CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-          if [[ "$CURRENT_BRANCH" == "master" ]]; then
-            echo "master"
-            git push origin master
-          else 
-            echo "Pushing to branch"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
