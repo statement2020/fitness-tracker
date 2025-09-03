@@ -29,6 +29,9 @@ public class EntryServiceImplTest {
     @Mock
     private BmrService bmrService;
 
+    @Mock
+    private BmiCalculator bmiCalculator;
+
     @InjectMocks
     private EntryServiceImpl entryService;
 
@@ -59,7 +62,7 @@ public class EntryServiceImplTest {
 
         when(entryRepository.findByUserOrderByDateAsc(testUser)).thenReturn(mockEntries);
         when(bmrService.calculateBmrForEntry(any(Entry.class))).thenReturn(2000.0);
-
+        when(bmiCalculator.calculateBmi(anyDouble(), anyDouble())).thenReturn(22.0);
         List<Map<String, Object>> result = entryService.getEntriesForUser(testUser);
 
         assertEquals(3, result.size(), "Should return three entries.");
@@ -92,7 +95,7 @@ public class EntryServiceImplTest {
 
         when(entryRepository.findByUserOrderByDateAsc(testUser)).thenReturn(mockEntries);
         when(bmrService.calculateBmrForEntry(any(Entry.class))).thenReturn(2000.0);
-
+        when(bmiCalculator.calculateBmi(anyDouble(), anyDouble())).thenReturn(22.0);
         List<Map<String, Object>> result = entryService.getEntriesForUser(testUser);
 
         assertEquals(1, result.size(), "Should return only one entry for the duplicate date.");
