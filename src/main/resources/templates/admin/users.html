@@ -2,25 +2,34 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Users</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
 <div th:replace="fragments/navbar :: navbar" class="sticky top-0 z-50"></div>
 
 <!-- Header -->
-<div class="flex items-center justify-between mb-6 space-y-1">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-3 sm:space-y-0">
     <h1 class="text-3xl font-bold text-indigo-700">👥 Manage Users</h1>
-    <div class="flex items-center space-x-3">
+    <div class="flex items-center">
         <a th:href="@{/admin/users/new}"
-           class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow">
+           class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition-colors">
             ➕ Create New User
         </a>
     </div>
 </div>
 
 <!-- Users Table -->
-<div class="bg-white rounded-2xl shadow-lg p-6">
+<div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
     <table class="min-w-full border-collapse">
         <thead>
         <tr class="bg-indigo-100 text-left">
@@ -28,7 +37,7 @@
             <th class="py-2 px-4 font-semibold text-gray-700">Email</th>
             <th class="py-2 px-4 font-semibold text-gray-700">Name</th>
             <th class="py-2 px-4 font-semibold text-gray-700">Roles</th>
-            <th class="py-2 px-4 font-semibold text-gray-700">Active</th>
+            <th class="py-2 px-4 font-semibold text-gray-700">Status</th>
         </tr>
         </thead>
         <tbody>
@@ -37,22 +46,20 @@
             <td class="py-2 px-4 text-gray-700" th:text="${user.email}"></td>
             <td class="py-2 px-4 text-gray-700" th:text="${user.name}"></td>
             <td class="py-2 px-4 text-gray-700" th:text="${user.roles}"></td>
-            <form th:if="${user.active}" th:action="@{'/admin/users/' + ${user.id} + '/deactivate'}" method="post">
-                <td class="py-2 px-4 text-gray-700">
+            <td class="py-2 px-4 text-gray-700">
+                <form th:if="${user.active}" th:action="@{'/admin/users/' + ${user.id} + '/deactivate'}" method="post">
                     <button type="submit"
-                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow">
+                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow transition-colors">
                         Deactivate
                     </button>
-                </td>
-            </form>
-            <form th:if="${!user.active}" th:action="@{'/admin/users/' + ${user.id} + '/activate'}" method="post">
-                <td class="py-2 px-4 text-gray-700">
+                </form>
+                <form th:if="${!user.active}" th:action="@{'/admin/users/' + ${user.id} + '/activate'}" method="post">
                     <button type="submit"
-                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow">
+                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg shadow transition-colors">
                         Activate
                     </button>
-                </td>
-            </form>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>

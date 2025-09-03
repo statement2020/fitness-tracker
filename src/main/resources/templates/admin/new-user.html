@@ -2,15 +2,24 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create New User</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
 <div th:replace="fragments/navbar :: navbar" class="sticky top-0 z-50"></div>
 <div class="flex items-center justify-center min-h-screen px-1">
 
     <!-- Card -->
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
+    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg">
         <h1 class="text-2xl font-bold text-indigo-700 mb-6">👤 Create New User</h1>
 
         <form th:action="@{/admin/users}" th:object="${user}" method="post" class="space-y-5">
@@ -111,7 +120,7 @@
                 <label class="block text-gray-700 font-medium mb-2">Roles</label>
                 <div class="space-y-2">
                     <div th:each="role : ${allRoles}" class="flex items-center space-x-2">
-                        <input type="checkbox" th:value="${role}" th:field="*{roles}" id="role__${role}"
+                        <input type="checkbox" th:value="${role}" th:field="*{roles}" th:id="${role}"
                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
                         <label th:for="${role}" th:text="${role}" class="text-gray-700"></label>
                     </div>
@@ -119,13 +128,13 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex justify-between items-center pt-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-4 space-y-3 sm:space-y-0 sm:space-x-3">
                 <a th:href="@{/admin/users}"
-                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg shadow">
+                   class="w-full sm:w-auto text-center bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg shadow transition-colors">
                     Cancel
                 </a>
                 <button type="submit"
-                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow">
+                        class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition-colors">
                     ✅ Create User
                 </button>
             </div>
