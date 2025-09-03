@@ -34,6 +34,10 @@
                class="text-white hover:text-gray-200 font-medium transition">
                 My Profile
             </a>
+            <a th:href="@{/entries}"
+               class="text-white hover:text-gray-200 font-medium transition">
+                My Entries
+            </a>
             <a th:if="${roles != null and roles.contains('ROLE_ADMIN')}"
                th:href="@{/admin/users}"
                class="text-white hover:text-gray-200 font-medium transition">

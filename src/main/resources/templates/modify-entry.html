@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+<div th:replace="fragments/navbar :: navbar" class="sticky top-0 z-50"></div>
+
+<div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
+        <h2 class="text-2xl font-bold text-indigo-700">Modify Entry</h2>
+    </div>
+
+    <!-- Entry Form -->
+    <form th:action="@{'/entries/amend/' + ${entry.id}}" th:object="${entry}" method="post" class="space-y-5">
+            <input type="hidden" th:field="*{date}"/>
+            <input type="hidden" th:field="*{id}" />
+            <input type="hidden" th:field="*{user}" />
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Calories Consumed</label>
+            <input type="number" step="1" th:field="*{caloriesConsumed}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Calories Burnt</label>
+            <input type="number" step="1" th:field="*{caloriesBurnt}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+            <input type="number" step="0.1" th:field="*{weight}" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"/>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4">
+            <button type="submit"
+                    class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow transition-colors">
+                Save
+            </button>
+            <a th:href="@{/}"
+               class="w-full sm:w-auto text-center bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg shadow transition-colors">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

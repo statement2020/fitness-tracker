@@ -42,6 +42,8 @@ public class EntryServiceImplTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setName("John Doe");
+        testUser.setHeight(192.1);
+        testUser.setWeight(145.1);
     }
 
     private Entry createEntry(LocalDate date, double weight) {
@@ -50,6 +52,7 @@ public class EntryServiceImplTest {
         entry.setWeight(weight);
         entry.setCaloriesConsumed(2000);
         entry.setCaloriesBurnt(300);
+        entry.setUser(testUser);
         return entry;
     }
 

@@ -13,17 +13,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  app:
-    build: .
-    container_name: fitness_app
-    depends_on:
-      - postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fitness_db
-      SPRING_DATASOURCE_USERNAME: fitness_user
-      SPRING_DATASOURCE_PASSWORD: fitness_pass
-    ports:
-      - "8080:8080"
+#  app:
+#    build: .
+#    container_name: fitness_app
+#    depends_on:
+#      - postgres
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fitness_db
+#      SPRING_DATASOURCE_USERNAME: fitness_user
+#      SPRING_DATASOURCE_PASSWORD: fitness_pass
+#    ports:
+#      - "8080:8080"
 
 volumes:
   postgres_data:

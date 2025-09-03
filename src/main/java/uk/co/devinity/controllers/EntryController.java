@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import uk.co.devinity.entities.Entry;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
@@ -80,6 +81,44 @@ public class EntryController {
         model.addAttribute("userEntriesMap", userEntriesMap);
 
         return "combined-dashboard";
+    }
+
+    @GetMapping("/entries")
+    public String entries(Model model, Principal principal) {
+        List<User> users = getUsers(principal);
+
+        Map<Long, List<Map<String, Object>>> userEntriesMap = new HashMap<>();
+
+        for (User user : users) {
+            var entryData = entryService.getEntriesForUser(user);
+            userEntriesMap.put(user.getId(), entryData);
+        }
+
+        model.addAttribute("users", users);
+        model.addAttribute("userEntriesMap", userEntriesMap);
+        return "entries";
+    }
+
+    @GetMapping("/entries/amend/{entryId}")
+    public String loadAmendEntry(Model model, Principal principal, @PathVariable Long entryId) {
+        getUsers(principal);
+        var entry = entryService.getEntryByIdAndUser(entryId);
+        model.addAttribute("entry", entry);
+        return "modify-entry";
+    }
+
+    @PostMapping("/entries/amend/{entryId}")
+    public String amendEntry(Principal principal, @PathVariable Long entryId, @ModelAttribute Entry entry) {
+        getUsers(principal);
+        entryRepository.save(entry);
+        return "redirect:/entries";
+    }
+
+    @GetMapping("/entries/delete/{entryId}")
+    public String deleteEntry(Principal principal, @PathVariable Long entryId) {
+        getUsers(principal);
+        entryRepository.deleteById(entryId);
+        return "redirect:/entries";
     }
 
     private List<User> getUsers(Principal principal) {
