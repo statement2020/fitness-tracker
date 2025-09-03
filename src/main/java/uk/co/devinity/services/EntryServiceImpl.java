@@ -1,10 +1,13 @@
 package uk.co.devinity.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.co.devinity.entities.Entry;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,6 +17,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class EntryServiceImpl implements EntryService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EntryServiceImpl.class);
 
     private final EntryRepository entryRepository;
     private final BmrService bmrService;
@@ -41,15 +46,25 @@ public class EntryServiceImpl implements EntryService {
 
         List<Map<String, Object>> entryData = new ArrayList<>();
         for (Entry e : entries) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("date", e.getDate().toString());
-            map.put("weight", e.getWeight());
-            map.put("caloriesConsumed", e.getCaloriesConsumed());
-            map.put("caloriesBurnt", e.getCaloriesBurnt());
-            map.put("bmr", bmrService.calculateBmrForEntry(e));
-            map.put("bmi", bmiCalculator.calculateBmi(e.getWeight(), user.getHeight()));
-            entryData.add(map);
+            entryData.add(toSimpleMap(e));
         }
         return entryData;
+    }
+
+    @Override
+    public Entry getEntryByIdAndUser(Long entryId) {
+        return entryRepository.findById(entryId).orElseThrow(() -> new IllegalArgumentException("Entry not found"));
+    }
+
+    private Map<String, Object> toSimpleMap(Entry entry) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("date", entry.getDate().toString());
+        map.put("weight", entry.getWeight());
+        map.put("caloriesConsumed", entry.getCaloriesConsumed());
+        map.put("caloriesBurnt", entry.getCaloriesBurnt());
+        map.put("bmr", bmrService.calculateBmrForEntry(entry));
+        map.put("bmi", bmiCalculator.calculateBmi(entry.getWeight(), entry.getUser().getHeight()));
+        map.put("id", entry.getId());
+        return map;
     }
 }

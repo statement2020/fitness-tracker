@@ -74,4 +74,17 @@ public class Entry {
     public void setUser(User user) {
         this.user = user;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Entry{");
+        sb.append("id=").append(id);
+        sb.append(", date=").append(date);
+        sb.append(", caloriesConsumed=").append(caloriesConsumed);
+        sb.append(", caloriesBurnt=").append(caloriesBurnt);
+        sb.append(", weight=").append(weight);
+        sb.append(", user=").append(user);
+        sb.append('}');
+        return sb.toString();
+    }
 }

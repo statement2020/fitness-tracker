@@ -5,23 +5,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.ui.Model;
+import uk.co.devinity.entities.Entry;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.services.EntryService;
 import uk.co.devinity.services.StreamService;
 
-import java.lang.reflect.Method;
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EntryControllerTest {
@@ -35,66 +36,137 @@ class EntryControllerTest {
     @Mock
     private StreamService streamService;
 
+    @Mock
+    private EntryService entryService;
+
+    @Mock
+    private Model model;
+
     @InjectMocks
     private EntryController underTest;
 
     private Principal principal = () -> "alice@example.com";
 
     @Test
-    void whenAdminPrincipal_thenGetUsersReturnsAll() throws Exception {
-        User admin = new User();
-        admin.setEmail("alice@example.com");
-        admin.setRoles(Set.of("ROLE_ADMIN"));
-        admin.setActive(true);
-        admin.setName("admin");
-        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(admin));
-        when(userRepository.findAllByActiveIsTrueOrderByNameAsc()).thenReturn(List.of(admin));
+    void index_shouldAddUsersToModel() {
+        User user = new User();
+        user.setEmail("alice@example.com");
+        user.setRoles(Set.of("ROLE_USER"));
+        user.setActive(true);
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com"))
+                .thenReturn(Optional.of(user));
 
-        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
-        m.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        List<User> result = (List<User>) m.invoke(underTest, principal);
+        String view = underTest.index(model, principal);
 
-        assertEquals(1, result.size());
+        verify(model).addAttribute(eq("users"), any());
+        assertEquals("index", view);
     }
 
     @Test
-    void whenNormalPrincipal_thenGetUsersReturnsSelf() throws Exception {
+    void entryForm_shouldReturnEntryFormView() {
+        User user = new User();
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        String view = underTest.entryForm(1L, model);
+
+        verify(model).addAttribute("user", user);
+        verify(model).addAttribute(eq("entry"), any(Entry.class));
+        assertEquals("entry-form", view);
+    }
+
+    @Test
+    void submitEntry_shouldSaveEntryAndBroadcast() {
+        User user = new User();
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        Entry entry = new Entry();
+
+        String result = underTest.submitEntry(1L, entry);
+
+        verify(entryRepository).save(entry);
+        verify(streamService).broadcastNewEntry(entry);
+        assertEquals("redirect:/combined-dashboard", result);
+    }
+
+    @Test
+    void combinedDashboard_shouldReturnDashboardView() {
+        User user = new User();
+        user.setEmail("alice@example.com");
+        user.setRoles(Set.of("ROLE_USER"));
+        user.setActive(true);
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com"))
+                .thenReturn(Optional.of(user));
+        when(entryService.getEntriesForUser(user)).thenReturn(List.of(Map.of()));
+
+        String view = underTest.combinedDashboard(model, principal);
+
+        verify(model).addAttribute(eq("users"), any());
+        verify(model).addAttribute(eq("userEntriesMap"), any());
+        assertEquals("combined-dashboard", view);
+    }
+
+    @Test
+    void entries_shouldReturnEntriesView() {
+        User user = new User();
+        user.setEmail("alice@example.com");
+        user.setRoles(Set.of("ROLE_USER"));
+        user.setActive(true);
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com"))
+                .thenReturn(Optional.of(user));
+        when(entryService.getEntriesForUser(user)).thenReturn(List.of(Map.of()));
+
+        String view = underTest.entries(model, principal);
+
+        verify(model).addAttribute(eq("users"), any());
+        verify(model).addAttribute(eq("userEntriesMap"), any());
+        assertEquals("entries", view);
+    }
+
+    @Test
+    void loadAmendEntry_shouldReturnModifyEntryView() {
+        Entry entry = new Entry();
+        entry.setId(1L);
+        when(entryService.getEntryByIdAndUser(1L)).thenReturn(entry);
         User user = new User();
         user.setEmail("alice@example.com");
         user.setRoles(Set.of("ROLE_USER"));
         user.setActive(true);
         when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
 
-        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
-        m.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        List<User> result = (List<User>) m.invoke(underTest, principal);
+        String view = underTest.loadAmendEntry(model, principal, 1L);
 
-        assertEquals(1, result.size());
-        assertEquals("alice@example.com", result.get(0).getEmail());
+        verify(model).addAttribute("entry", entry);
+        assertEquals("modify-entry", view);
     }
 
     @Test
-    void whenUserNotFound_thenGetUsersThrows() throws Exception {
-        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.empty());
-        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
-        m.setAccessible(true);
-
-        Exception ex = assertThrows(Exception.class, () -> m.invoke(underTest, principal));
-        assertTrue(ex.getCause() instanceof UsernameNotFoundException);
-    }
-
-    @Test
-    void whenNormalUserWithDifferentEmail_thenGetUsersThrowsAccessDenied() throws Exception {
+    void amendEntry_shouldSaveEntry() {
+        Entry entry = new Entry();
+        entry.setId(1L);
         User user = new User();
-        user.setEmail("someoneelse@example.com");
+        user.setEmail("alice@example.com");
         user.setRoles(Set.of("ROLE_USER"));
+        user.setActive(true);
         when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
 
-        Method m = EntryController.class.getDeclaredMethod("getUsers", Principal.class);
-        m.setAccessible(true);
-        Exception ex = assertThrows(Exception.class, () -> m.invoke(underTest, principal));
-        assertTrue(ex.getCause() instanceof AccessDeniedException);
+        String result = underTest.amendEntry(principal, 1L, entry);
+
+        verify(entryRepository).save(entry);
+        assertEquals("redirect:/entries", result);
+    }
+
+    @Test
+    void deleteEntry_shouldDeleteById() {
+        User user = new User();
+        user.setEmail("alice@example.com");
+        user.setRoles(Set.of("ROLE_USER"));
+        user.setActive(true);
+        when(userRepository.findByEmailAndActiveIsTrue("alice@example.com")).thenReturn(Optional.of(user));
+
+        String result = underTest.deleteEntry(principal, 1L);
+
+        verify(entryRepository).deleteById(1L);
+        assertEquals("redirect:/entries", result);
     }
 }

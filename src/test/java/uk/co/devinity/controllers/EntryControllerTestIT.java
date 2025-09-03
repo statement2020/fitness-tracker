@@ -21,16 +21,16 @@ import uk.co.devinity.repositories.UserRepository;
 import uk.co.devinity.services.StreamService;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ContextConfiguration(initializers = EntryControllerTestIT.Initializer.class)
 @SpringBootTest(properties = {
@@ -45,6 +45,7 @@ class EntryControllerTestIT {
             .withDatabaseName("fitnesstracker")
             .withUsername("testuser")
             .withPassword("testpass");
+
     @Autowired
     private MockMvc mvc;
 
@@ -70,7 +71,7 @@ class EntryControllerTestIT {
         userRepository.saveAndFlush(alice);
     }
 
-    public void delete() {
+    private void delete() {
         userRepository.deleteAll();
         userRepository.flush();
     }
@@ -103,6 +104,85 @@ class EntryControllerTestIT {
 
         verify(entryRepository).save(any(Entry.class));
         verify(streamService).broadcastNewEntry(any(Entry.class));
+        delete();
+    }
+
+    @WithMockUser(roles = "USER", username = "alice@example.com")
+    @Test
+    void whenGetIndex_thenUsersListed() throws Exception {
+        createUser();
+        mvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("users"))
+                .andExpect(view().name("index"));
+        delete();
+    }
+
+    @WithMockUser(roles = "USER", username = "alice@example.com")
+    @Test
+    void whenGetCombinedDashboard_thenUsersAndEntriesPresent() throws Exception {
+        createUser();
+        mvc.perform(get("/combined-dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("users"))
+                .andExpect(model().attributeExists("userEntriesMap"))
+                .andExpect(view().name("combined-dashboard"));
+        delete();
+    }
+
+    @WithMockUser(roles = "USER", username = "alice@example.com")
+    @Test
+    void whenGetEntries_thenUsersAndEntriesPresent() throws Exception {
+        createUser();
+        mvc.perform(get("/entries"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("users"))
+                .andExpect(model().attributeExists("userEntriesMap"))
+                .andExpect(view().name("entries"));
+        delete();
+    }
+
+    @WithMockUser(roles = "USER", username = "alice@example.com")
+    @Test
+    void whenLoadAmendEntry_thenModelContainsEntry() throws Exception {
+        createUser();
+        Entry entry = new Entry();
+        entry.setId(1L);
+        entry.setDate(LocalDate.now());
+        when(entryRepository.findById(1L)).thenReturn(Optional.of(entry));
+
+        mvc.perform(get("/entries/amend/1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("entry"))
+                .andExpect(view().name("modify-entry"));
+        delete();
+    }
+
+    @WithMockUser(roles = "USER", username = "alice@example.com")
+    @Test
+    void whenAmendEntry_thenSaved() throws Exception {
+        createUser();
+        mvc.perform(post("/entries/amend/1")
+                        .with(csrf())
+                        .param("id", "1")
+                        .param("date", LocalDate.now().toString())
+                        .param("caloriesConsumed", "1800"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/entries"));
+
+        verify(entryRepository).save(any(Entry.class));
+        delete();
+    }
+
+    @WithMockUser(roles = "USER", username = "alice@example.com")
+    @Test
+    void whenDeleteEntry_thenRemoved() throws Exception {
+        createUser();
+        mvc.perform(get("/entries/delete/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/entries"));
+
+        verify(entryRepository).deleteById(1L);
         delete();
     }
 
