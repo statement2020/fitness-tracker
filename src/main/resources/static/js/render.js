@@ -75,7 +75,19 @@ function initFitnessCharts(users, userEntriesMap) {
             y: entries.map(e => e.weight),
             type: 'scatter',
             mode: 'lines+markers',
-            name: user.name
+            name: user.name + ' - Weight',
+        });
+        weightTraceCounter++;
+
+        // BMI trace
+        traceIndexMap[user.id].bmi = weightTraceCounter;
+        weightTraces.push({
+            x: dates,
+            y: entries.map(e => e.bmi),
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: user.name + ' - BMI',
+            yaxis: 'y2'
         });
         weightTraceCounter++;
     });
@@ -100,7 +112,12 @@ function initFitnessCharts(users, userEntriesMap) {
         xaxis: {title: 'Date', type: 'date'},
         yaxis: {title: 'Weight'},
         legend: {orientation: "h", y: -0.3},
-        margin: {t: 50, b: 100}
+        margin: {t: 50, b: 100},
+        yaxis2: {
+            title: 'BMI',
+            overlaying: 'y',
+            side: 'right'
+        }
     };
 
 // Render initial charts

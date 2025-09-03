@@ -17,10 +17,14 @@ public class EntryServiceImpl implements EntryService {
 
     private final EntryRepository entryRepository;
     private final BmrService bmrService;
+    private final BmiCalculator bmiCalculator;
 
-    public EntryServiceImpl(EntryRepository entryRepository, BmrService bmrService) {
+    public EntryServiceImpl(EntryRepository entryRepository,
+                            BmrService bmrService,
+                            BmiCalculator bmiCalculator) {
         this.entryRepository = entryRepository;
         this.bmrService = bmrService;
+        this.bmiCalculator = bmiCalculator;
     }
 
     @Override
@@ -43,6 +47,7 @@ public class EntryServiceImpl implements EntryService {
             map.put("caloriesConsumed", e.getCaloriesConsumed());
             map.put("caloriesBurnt", e.getCaloriesBurnt());
             map.put("bmr", bmrService.calculateBmrForEntry(e));
+            map.put("bmi", bmiCalculator.calculateBmi(e.getWeight(), user.getHeight()));
             entryData.add(map);
         }
         return entryData;
