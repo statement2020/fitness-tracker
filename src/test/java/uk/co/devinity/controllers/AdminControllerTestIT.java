@@ -9,16 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.springframework.security.test.context.support.WithMockUser;
+import uk.co.devinity.entities.ActivityLevel;
+import uk.co.devinity.entities.Sex;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.UserRepository;
-import uk.co.devinity.entities.Sex;
-import uk.co.devinity.entities.ActivityLevel;
-import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -144,6 +143,47 @@ class AdminControllerTestIT {
 
         User deactivatedUser = userRepository.findById(userToDeactivate.getId()).orElseThrow();
         assertThat(deactivatedUser.isActive()).isFalse();
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenResetPasswordForm_thenReturnsCorrectViewAndModel() throws Exception {
+        User user = new User();
+        user.setEmail("reset@example.com");
+        user.setName("Reset User");
+        user.setPassword("secret");
+        user.setActive(true);
+        userRepository.save(user);
+
+        mvc.perform(get("/admin/users/" + user.getId() + "/reset-password"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/reset-password"))
+                .andExpect(model().attributeExists("user"));
+
+        User reloaded = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(reloaded.getPassword()).isEqualTo("secret");
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenResetPassword_thenPasswordIsUpdatedAndRedirects() throws Exception {
+        User user = new User();
+        user.setEmail("changepass@example.com");
+        user.setName("Change Pass User");
+        user.setPassword("oldpassword");
+        user.setActive(true);
+        userRepository.save(user);
+
+        mvc.perform(post("/admin/users/" + user.getId() + "/reset-password")
+                        .with(csrf())
+                        .param("id", user.getId().toString())
+                        .param("password", "newStrongPassword123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/admin/users"));
+
+        User updated = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(updated.getPassword()).isNotEqualTo("newStrongPassword123");
+        assertThat(updated.getPassword()).startsWith("$2a$"); // BCrypt hash prefix
     }
 
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
