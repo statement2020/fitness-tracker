@@ -31,17 +31,17 @@
         </div>
         <div class="space-y-2 text-sm text-gray-700">
             <p><span class="font-medium">Weight loss this week:</span>
-                <span th:text="${userStats[user.id].weightLossThisWeek} + ' kg'"></span></p>
+                <span th:text="${#numbers.formatDecimal(userStats[user.id].weightLossThisWeek, 1, 2)} + ' kg'"></span></p>
             <p><span class="font-medium">Overall weight loss:</span>
-                <span th:text="${userStats[user.id].weightLossOverall} + ' kg'"></span></p>
+                <span th:text="${#numbers.formatDecimal(userStats[user.id].weightLossOverall, 1, 2)} + ' kg'"></span></p>
             <p><span class="font-medium">Avg loss per week:</span>
-                <span th:text="${userStats[user.id].avgLossPerWeek} + ' kg'"></span></p>
+                <span th:text="${#numbers.formatDecimal(userStats[user.id].avgLossPerWeek, 1, 2)} + ' kg'"></span></p>
             <p><span class="font-medium">Avg loss per day:</span>
-                <span th:text="${userStats[user.id].avgLossPerDay} + ' kg'"></span></p>
+                <span th:text="${#numbers.formatDecimal(userStats[user.id].avgLossPerDay, 1, 2)} + ' kg'"></span></p>
             <p><span class="font-medium">Avg calories burnt/day:</span>
-                <span th:text="${userStats[user.id].avgBurntPerDay}"></span></p>
+                <span th:text="${#numbers.formatDecimal(userStats[user.id].avgBurntPerDay, 1, 0)}"></span></p>
             <p><span class="font-medium">Avg calories consumed/day:</span>
-                <span th:text="${userStats[user.id].avgConsumedPerDay}"></span></p>
+                <span th:text="${#numbers.formatDecimal(userStats[user.id].avgConsumedPerDay, 1, 0)}"></span></p>
         </div>
 
         <div class="mt-4 flex flex-col sm:flex-row gap-2">
