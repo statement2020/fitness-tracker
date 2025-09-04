@@ -15,6 +15,7 @@ import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
 import uk.co.devinity.services.EntryService;
 import uk.co.devinity.services.StreamService;
+import uk.co.devinity.services.UserStatsService;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -28,21 +29,23 @@ public class EntryController {
     private final EntryRepository entryRepository;
     private final StreamService streamService;
     private final EntryService entryService;
+    private final UserStatsService userStatsService;
 
     public EntryController(UserRepository userRepository,
                            EntryRepository entryRepository,
                            StreamService streamService,
-                           EntryService entryService) {
+                           EntryService entryService, UserStatsService userStatsService) {
         this.userRepository = userRepository;
         this.entryRepository = entryRepository;
         this.streamService = streamService;
         this.entryService = entryService;
+        this.userStatsService = userStatsService;
     }
 
     @GetMapping("/")
     public String index(Model model, Principal principal) {
         List<User> users = getUsers(principal);
-        model.addAttribute("users", users);
+        userStatsService.getAllStats(model, users);
         return "index";
     }
 

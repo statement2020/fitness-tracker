@@ -12,9 +12,9 @@ import uk.co.devinity.repositories.EntryRepository;
 import uk.co.devinity.repositories.UserRepository;
 import uk.co.devinity.services.EntryService;
 import uk.co.devinity.services.StreamService;
+import uk.co.devinity.services.UserStatsServiceImpl;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +22,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EntryControllerTest {
@@ -42,6 +45,9 @@ class EntryControllerTest {
     @Mock
     private Model model;
 
+    @Mock
+    private UserStatsServiceImpl userStatsService;
+
     @InjectMocks
     private EntryController underTest;
 
@@ -55,7 +61,7 @@ class EntryControllerTest {
         user.setActive(true);
         when(userRepository.findByEmailAndActiveIsTrue("alice@example.com"))
                 .thenReturn(Optional.of(user));
-
+        doCallRealMethod().when(userStatsService).getAllStats(any(), any());
         String view = underTest.index(model, principal);
 
         verify(model).addAttribute(eq("users"), any());
