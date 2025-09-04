@@ -1,4 +1,5 @@
 package uk.co.devinity.controllers;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -66,5 +67,21 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
+    @GetMapping("/users/{id}/reset-password")
+    public String resetPasswordForm(@ModelAttribute("id") Long id, Model model) {
+        final var user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
+        user.setPassword("");
+        model.addAttribute("user", user);
+        return "admin/reset-password";
+    }
+
+    @PostMapping("/users/{id}/reset-password")
+    public String resetPassword(@ModelAttribute User user) {
+        userRepository.findById(user.getId()).ifPresent(existingUser -> {
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(existingUser);
+        });
+        return "redirect:/admin/users";
+    }
 
 }
