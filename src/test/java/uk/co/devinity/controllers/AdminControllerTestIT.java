@@ -15,9 +15,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import uk.co.devinity.entities.ActivityLevel;
+import uk.co.devinity.entities.FunctionalType;
 import uk.co.devinity.entities.Sex;
 import uk.co.devinity.entities.User;
+import uk.co.devinity.entities.WorkoutType;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.repositories.WorkoutTypeRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -44,6 +47,9 @@ class AdminControllerTestIT {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WorkoutTypeRepository workoutTypeRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -184,6 +190,52 @@ class AdminControllerTestIT {
         User updated = userRepository.findById(user.getId()).orElseThrow();
         assertThat(updated.getPassword()).isNotEqualTo("newStrongPassword123");
         assertThat(updated.getPassword()).startsWith("$2a$"); // BCrypt hash prefix
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenLoadWorkoutTypes_thenViewReturnedAndModelHasWorkoutTypes() throws Exception {
+        WorkoutType wt = new WorkoutType();
+        wt.setWorkoutName("Cardio");
+        wt.setFunctionalType(FunctionalType.CARDIO);
+        wt.setDescription("description");
+        workoutTypeRepository.save(wt);
+
+        mvc.perform(get("/admin/workouts/workout-types"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/workout-types"))
+                .andExpect(model().attributeExists("workoutTypes"));
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenLoadNewWorkoutType_thenViewReturnedAndModelHasWorkoutType() throws Exception {
+        mvc.perform(get("/admin/workouts/workout-type/new"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/new-workout-type"))
+                .andExpect(model().attributeExists("workoutType"));
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenCreateNewWorkoutType_thenSavedAndRedirects() throws Exception {
+        mvc.perform(post("/admin/workouts/workout-type/new")
+                        .with(csrf())
+                        .param("workoutName", "Strength Training")
+                        .param("functionalType", FunctionalType.FULL_BODY.toString())
+                        .param("description", "A full body strength training workout"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/admin/workouts/workout-types"));
+
+        WorkoutType saved = workoutTypeRepository.findAll().stream()
+                .filter(w -> "Strength Training".equals(w.getWorkoutName()))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(saved).isNotNull();
+        assertThat(saved.getWorkoutName()).isEqualTo("Strength Training");
+        assertThat(saved.getDescription()).isEqualTo("A full body strength training workout");
+        assertThat(saved.getFunctionalType()).isEqualTo(FunctionalType.FULL_BODY);
     }
 
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {

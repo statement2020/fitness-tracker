@@ -47,6 +47,17 @@
                class="text-white hover:text-gray-200 font-medium transition">
                 Manage Users
             </a>
+            <a th:if="${roles != null and roles.contains('ROLE_ADMIN')}"
+               th:href="@{/admin/workouts}"
+               class="text-white hover:text-gray-200 font-medium transition">
+                Manage Workouts
+            </a>
+            <a th:if="${roles != null and roles.contains('ROLE_ADMIN')}"
+               th:href="@{/admin/workouts/workout-types}"
+               class="text-white hover:text-gray-200 font-medium transition">
+                Manage Workout Types
+            </a>
+
             <form th:action="@{/logout}" method="post" class="inline">
                 <button type="submit"
                         class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition">

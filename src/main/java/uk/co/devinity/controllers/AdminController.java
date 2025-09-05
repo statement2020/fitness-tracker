@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import uk.co.devinity.entities.User;
+import uk.co.devinity.entities.WorkoutType;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.services.WorkoutTypeService;
 
 import java.util.List;
 import java.util.Set;
@@ -19,10 +21,12 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WorkoutTypeService workoutTypeService;
 
-    public AdminController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AdminController(UserRepository userRepository, PasswordEncoder passwordEncoder, WorkoutTypeService workoutTypeService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.workoutTypeService = workoutTypeService;
     }
 
     @GetMapping("/users")
@@ -82,6 +86,25 @@ public class AdminController {
             userRepository.save(existingUser);
         });
         return "redirect:/admin/users";
+    }
+
+    @GetMapping("/workouts/workout-types")
+    public String loadWorkoutTypes(Model model) {
+        final var workouts = workoutTypeService.getAllWorkoutTypes();
+        model.addAttribute("workoutTypes", workouts);
+        return "admin/workout-types";
+    }
+
+    @GetMapping("/workouts/workout-type/new")
+    public String loadNewWorkoutType(Model model) {
+        model.addAttribute("workoutType", new WorkoutType());
+        return "admin/new-workout-type";
+    }
+
+    @PostMapping("/workouts/workout-type/new")
+    public String createNewWorkoutType(@ModelAttribute WorkoutType workoutType) {
+        workoutTypeService.saveWorkoutType(workoutType);
+        return "redirect:/admin/workouts/workout-types";
     }
 
 }
