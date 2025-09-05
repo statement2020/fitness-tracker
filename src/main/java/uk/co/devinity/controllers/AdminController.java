@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import uk.co.devinity.entities.User;
+import uk.co.devinity.entities.WorkoutPlan;
 import uk.co.devinity.entities.WorkoutType;
 import uk.co.devinity.repositories.UserRepository;
-import uk.co.devinity.services.WorkoutTypeService;
+import uk.co.devinity.services.WorkoutService;
 
 import java.util.List;
 import java.util.Set;
@@ -21,9 +22,9 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final WorkoutTypeService workoutTypeService;
+    private final WorkoutService workoutTypeService;
 
-    public AdminController(UserRepository userRepository, PasswordEncoder passwordEncoder, WorkoutTypeService workoutTypeService) {
+    public AdminController(UserRepository userRepository, PasswordEncoder passwordEncoder, WorkoutService workoutTypeService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.workoutTypeService = workoutTypeService;
@@ -107,4 +108,34 @@ public class AdminController {
         return "redirect:/admin/workouts/workout-types";
     }
 
+    @GetMapping("/workouts")
+    public String loadWorkouts(Model model) {
+        final var workouts = workoutTypeService.getAllWorkouts();
+        model.addAttribute("workouts", workouts);
+        return "admin/workouts";
+    }
+
+    @GetMapping("/workouts/new")
+    public String loadNewWorkout(Model model) {
+        model.addAttribute("workoutPlan", new WorkoutPlan());
+        model.addAttribute("allWorkoutTypes", workoutTypeService.getAllWorkoutTypes());
+        return "admin/new-workout";
+    }
+
+    @PostMapping("/workouts/new")
+    public String createNewWorkout(@ModelAttribute WorkoutPlan workoutPlan) {
+        workoutTypeService.saveWorkout(workoutPlan);
+        return "redirect:/admin/workouts";
+    }
+
+
+    @GetMapping("/workouts/{id}")
+    public String viewWorkoutDetails(@ModelAttribute("id") Long id, Model model) {
+        final var workoutPlan = workoutTypeService.getWorkoutById(id);
+        if (workoutPlan == null) {
+            return "redirect:/admin/workouts";
+        }
+        model.addAttribute("workoutPlan", workoutPlan);
+        return "admin/workout-details";
+    }
 }

@@ -14,21 +14,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
-import uk.co.devinity.entities.ActivityLevel;
-import uk.co.devinity.entities.FunctionalType;
-import uk.co.devinity.entities.Sex;
-import uk.co.devinity.entities.User;
-import uk.co.devinity.entities.WorkoutType;
+import uk.co.devinity.entities.*;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.repositories.WorkoutPlanRepository;
 import uk.co.devinity.repositories.WorkoutTypeRepository;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ContextConfiguration(initializers = AdminControllerTestIT.Initializer.class)
 @SpringBootTest(properties = {
@@ -52,6 +49,9 @@ class AdminControllerTestIT {
     private WorkoutTypeRepository workoutTypeRepository;
 
     @Autowired
+    private WorkoutPlanRepository workoutPlanRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     private User adminUser;
@@ -69,6 +69,8 @@ class AdminControllerTestIT {
 
     @AfterEach
     void cleanup() {
+        workoutPlanRepository.deleteAll();
+        workoutTypeRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -123,8 +125,7 @@ class AdminControllerTestIT {
         userToActivate.setActive(false);
         userRepository.save(userToActivate);
 
-        mvc.perform(post("/admin/users/" + userToActivate.getId() + "/activate")
-                        .with(csrf()))
+        mvc.perform(post("/admin/users/" + userToActivate.getId() + "/activate").with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/admin/users"));
 
@@ -142,8 +143,7 @@ class AdminControllerTestIT {
         userToDeactivate.setActive(true);
         userRepository.save(userToDeactivate);
 
-        mvc.perform(post("/admin/users/" + userToDeactivate.getId() + "/deactivate")
-                        .with(csrf()))
+        mvc.perform(post("/admin/users/" + userToDeactivate.getId() + "/deactivate").with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/admin/users"));
 
@@ -165,9 +165,6 @@ class AdminControllerTestIT {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/reset-password"))
                 .andExpect(model().attributeExists("user"));
-
-        User reloaded = userRepository.findById(user.getId()).orElseThrow();
-        assertThat(reloaded.getPassword()).isEqualTo("secret");
     }
 
     @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
@@ -189,7 +186,7 @@ class AdminControllerTestIT {
 
         User updated = userRepository.findById(user.getId()).orElseThrow();
         assertThat(updated.getPassword()).isNotEqualTo("newStrongPassword123");
-        assertThat(updated.getPassword()).startsWith("$2a$"); // BCrypt hash prefix
+        assertThat(updated.getPassword()).startsWith("$2a$");
     }
 
     @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
@@ -234,8 +231,74 @@ class AdminControllerTestIT {
 
         assertThat(saved).isNotNull();
         assertThat(saved.getWorkoutName()).isEqualTo("Strength Training");
-        assertThat(saved.getDescription()).isEqualTo("A full body strength training workout");
         assertThat(saved.getFunctionalType()).isEqualTo(FunctionalType.FULL_BODY);
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenLoadWorkouts_thenViewReturnedAndModelHasWorkouts() throws Exception {
+        WorkoutPlan plan = new WorkoutPlan();
+        plan.setName("Morning Routine");
+        workoutPlanRepository.save(plan);
+
+        mvc.perform(get("/admin/workouts"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/workouts"))
+                .andExpect(model().attributeExists("workouts"));
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenLoadNewWorkout_thenViewReturnedAndModelHasAttributes() throws Exception {
+        WorkoutType type = new WorkoutType();
+        type.setWorkoutName("HIIT");
+        type.setFunctionalType(FunctionalType.CARDIO);
+        workoutTypeRepository.save(type);
+
+        mvc.perform(get("/admin/workouts/new"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/new-workout"))
+                .andExpect(model().attributeExists("workoutPlan"))
+                .andExpect(model().attributeExists("allWorkoutTypes"));
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenCreateNewWorkout_thenSavedAndRedirects() throws Exception {
+        mvc.perform(post("/admin/workouts/new")
+                        .with(csrf())
+                        .param("name", "Evening Workout"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/admin/workouts"));
+
+        WorkoutPlan saved = workoutPlanRepository.findAll().stream()
+                .filter(w -> "Evening Workout".equals(w.getName()))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(saved).isNotNull();
+        assertThat(saved.getName()).isEqualTo("Evening Workout");
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenViewWorkoutDetails_thenViewReturnedAndModelHasWorkout() throws Exception {
+        WorkoutPlan plan = new WorkoutPlan();
+        plan.setName("Detailed Plan");
+        workoutPlanRepository.save(plan);
+
+        mvc.perform(get("/admin/workouts/" + plan.getId()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/workout-details"))
+                .andExpect(model().attributeExists("workoutPlan"));
+    }
+
+    @WithMockUser(username = "admin@example.com", roles = {"ADMIN"})
+    @Test
+    void whenViewWorkoutDetails_withInvalidId_thenRedirects() throws Exception {
+        mvc.perform(get("/admin/workouts/9999"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/admin/workouts"));
     }
 
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {

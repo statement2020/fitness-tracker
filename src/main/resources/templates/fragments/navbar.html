@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navbar Fragment</title>
+    <title>Fitness Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,6 +69,10 @@
 
     <!-- Mobile Navigation Links -->
     <div class="flex sm:hidden flex-wrap justify-center gap-4 px-4 pb-4">
+        <a th:href="@{/}"
+           class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
+            Home
+        </a>
         <a th:href="@{/combined-dashboard}"
            class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
             Dashboard
@@ -77,10 +81,24 @@
            class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
             My Profile
         </a>
+        <a th:href="@{/entries}"
+           class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
+            My Entries
+        </a>
         <a th:if="${roles != null and roles.contains('ROLE_ADMIN')}"
            th:href="@{/admin/users}"
            class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
             Manage Users
+        </a>
+        <a th:if="${roles != null and roles.contains('ROLE_ADMIN')}"
+           th:href="@{/admin/workouts}"
+           class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
+            Manage Workouts
+        </a>
+        <a th:if="${roles != null and roles.contains('ROLE_ADMIN')}"
+           th:href="@{/admin/workouts/workout-types}"
+           class="text-white hover:bg-gray-700 rounded-md p-2 font-medium transition">
+            Manage Workout Types
         </a>
         <form th:action="@{/logout}" method="post" class="inline">
             <button type="submit"

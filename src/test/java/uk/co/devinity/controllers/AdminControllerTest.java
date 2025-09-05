@@ -8,10 +8,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
 import uk.co.devinity.entities.User;
+import uk.co.devinity.entities.WorkoutPlan;
+import uk.co.devinity.entities.WorkoutType;
 import uk.co.devinity.repositories.UserRepository;
-import uk.co.devinity.services.WorkoutTypeService;
+import uk.co.devinity.services.WorkoutService;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,14 +26,14 @@ class AdminControllerTest {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private AdminController underTest;
-    private WorkoutTypeService workoutTypeService;
+    private WorkoutService workoutService;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        workoutTypeService = mock(WorkoutTypeService.class);
+        workoutService = mock(WorkoutService.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        underTest = new AdminController(userRepository, passwordEncoder, workoutTypeService);
+        underTest = new AdminController(userRepository, passwordEncoder, workoutService);
     }
 
     @Test
@@ -52,13 +56,13 @@ class AdminControllerTest {
 
     @Test
     void whenNewUserForm_thenModelPrepared() {
-        String view = underTest.newUserForm(mock(org.springframework.ui.Model.class));
+        String view = underTest.newUserForm(mock(Model.class));
         assertThat(view).isEqualTo("admin/new-user");
     }
 
     @Test
     void whenListUsers_thenUsersAddedToModel() {
-        String view = underTest.listUsers(mock(org.springframework.ui.Model.class));
+        String view = underTest.listUsers(mock(Model.class));
         assertThat(view).isEqualTo("admin/users");
     }
 
@@ -136,7 +140,7 @@ class AdminControllerTest {
 
         User savedUser = captor.getValue();
         assertThat(savedUser.getId()).isEqualTo(userId);
-        assertThat(savedUser.getPassword()).isNotEqualTo("newPassword"); // must be encoded
+        assertThat(savedUser.getPassword()).isNotEqualTo("newPassword");
         assertThat(passwordEncoder.matches("newPassword", savedUser.getPassword())).isTrue();
     }
 
@@ -152,5 +156,94 @@ class AdminControllerTest {
 
         assertThat(view).isEqualTo("redirect:/admin/users");
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void whenLoadWorkoutTypes_thenWorkoutTypesAddedToModel() {
+        WorkoutType wt = new WorkoutType();
+        when(workoutService.getAllWorkoutTypes()).thenReturn(List.of(wt));
+
+        Model model = new ConcurrentModel();
+        String view = underTest.loadWorkoutTypes(model);
+
+        assertThat(view).isEqualTo("admin/workout-types");
+        assertThat(model.getAttribute("workoutTypes")).isEqualTo(List.of(wt));
+    }
+
+    @Test
+    void whenLoadNewWorkoutType_thenModelPrepared() {
+        Model model = new ConcurrentModel();
+
+        String view = underTest.loadNewWorkoutType(model);
+
+        assertThat(view).isEqualTo("admin/new-workout-type");
+        assertThat(model.getAttribute("workoutType")).isInstanceOf(WorkoutType.class);
+    }
+
+    @Test
+    void whenCreateNewWorkoutType_thenDelegatesToService() {
+        WorkoutType workoutType = new WorkoutType();
+
+        String view = underTest.createNewWorkoutType(workoutType);
+
+        verify(workoutService, times(1)).saveWorkoutType(workoutType);
+        assertThat(view).isEqualTo("redirect:/admin/workouts/workout-types");
+    }
+
+    @Test
+    void whenLoadWorkouts_thenWorkoutsAddedToModel() {
+        WorkoutPlan plan = new WorkoutPlan();
+        when(workoutService.getAllWorkouts()).thenReturn(List.of(plan));
+
+        Model model = new ConcurrentModel();
+        String view = underTest.loadWorkouts(model);
+
+        assertThat(view).isEqualTo("admin/workouts");
+        assertThat(model.getAttribute("workouts")).isEqualTo(List.of(plan));
+    }
+
+    @Test
+    void whenLoadNewWorkout_thenModelPrepared() {
+        WorkoutType wt = new WorkoutType();
+        when(workoutService.getAllWorkoutTypes()).thenReturn(List.of(wt));
+
+        Model model = new ConcurrentModel();
+        String view = underTest.loadNewWorkout(model);
+
+        assertThat(view).isEqualTo("admin/new-workout");
+        assertThat(model.getAttribute("workoutPlan")).isInstanceOf(WorkoutPlan.class);
+        assertThat(model.getAttribute("allWorkoutTypes")).isEqualTo(List.of(wt));
+    }
+
+    @Test
+    void whenCreateNewWorkout_thenDelegatesToService() {
+        WorkoutPlan plan = new WorkoutPlan();
+
+        String view = underTest.createNewWorkout(plan);
+
+        verify(workoutService, times(1)).saveWorkout(plan);
+        assertThat(view).isEqualTo("redirect:/admin/workouts");
+    }
+
+    @Test
+    void whenViewWorkoutDetails_thenWorkoutPlanReturned() {
+        WorkoutPlan plan = new WorkoutPlan();
+        plan.setId(1L);
+        when(workoutService.getWorkoutById(1L)).thenReturn(plan);
+
+        Model model = new ConcurrentModel();
+        String view = underTest.viewWorkoutDetails(1L, model);
+
+        assertThat(view).isEqualTo("admin/workout-details");
+        assertThat(model.getAttribute("workoutPlan")).isEqualTo(plan);
+    }
+
+    @Test
+    void whenViewWorkoutDetails_withInvalidId_thenRedirects() {
+        when(workoutService.getWorkoutById(99L)).thenReturn(null);
+
+        String view = underTest.viewWorkoutDetails(99L, new ConcurrentModel());
+
+        assertThat(view).isEqualTo("redirect:/admin/workouts");
     }
 }
