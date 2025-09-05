@@ -22,28 +22,28 @@
     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg">
         <h1 class="text-2xl font-bold text-indigo-700 mb-6">👤 Create New Workout</h1>
 
-        <form th:action="@{/admin/workouts/workout-type/new}" th:object="${workoutType}" method="post" class="space-y-5">
+        <form th:action="@{/admin/workouts/new}" th:object="${workoutPlan}" method="post" class="space-y-5">
             <!-- Email -->
             <div>
                 <label class="block text-gray-700 font-medium mb-1">Name</label>
-                <input type="text" th:field="*{workoutName}" required
+                <input type="text" th:field="*{name}" required
                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
             </div>
 
             <!-- Name -->
             <div>
-                <label class="block text-gray-700 font-medium mb-1">Description</label>
-                <input type="text" th:field="*{description}" required
+                <label class="block text-gray-700 font-medium mb-1">Duration (mins)</label>
+                <input type="text" th:field="*{duration}" required
                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
             </div>
             <div>
-                <label class="block text-gray-700 font-medium mb-2">Functional Type</label>
+                <label class="block text-gray-700 font-medium mb-2">Workout Type</label>
                 <div class="space-y-2">
-                    <div th:each="fType : ${T(uk.co.devinity.entities.FunctionalType).values()}"
+                    <div th:each="fType : ${allWorkoutTypes}"
                          class="flex items-center space-x-2">
-                        <input type="radio" th:value="${fType}" th:field="*{functionalType}" th:id="${fType}" required
+                        <input type="checkbox" th:value="${fType.id}" th:field="*{workoutTypes}" th:id="${fType.workoutName}" required
                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
-                        <label th:for="${fType}" th:text="${fType.name().replace('_', ' ')}"
+                        <label th:for="${fType.workoutName}" th:text="${fType.workoutName}"
                                class="text-gray-700"></label>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                 </a>
                 <button type="submit"
                         class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition-colors">
-                    Create Workout Type
+                    Create Workout
                 </button>
             </div>
         </form>
