@@ -9,6 +9,7 @@ import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.services.WorkoutTypeService;
 
 import java.util.Optional;
 
@@ -21,12 +22,14 @@ class AdminControllerTest {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private AdminController underTest;
+    private WorkoutTypeService workoutTypeService;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
+        workoutTypeService = mock(WorkoutTypeService.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        underTest = new AdminController(userRepository, passwordEncoder);
+        underTest = new AdminController(userRepository, passwordEncoder, workoutTypeService);
     }
 
     @Test
