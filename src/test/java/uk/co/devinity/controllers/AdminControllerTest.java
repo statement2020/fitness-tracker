@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import uk.co.devinity.controllers.mvc.AdminController;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.entities.WorkoutPlan;
 import uk.co.devinity.entities.WorkoutType;
@@ -15,7 +16,6 @@ import uk.co.devinity.services.WorkoutService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

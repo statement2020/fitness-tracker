@@ -1,6 +1,5 @@
 package uk.co.devinity.controllers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ui.Model;
+import uk.co.devinity.controllers.mvc.UserController;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.UserRepository;
 
