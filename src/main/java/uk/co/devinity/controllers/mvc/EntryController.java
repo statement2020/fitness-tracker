@@ -1,4 +1,4 @@
-package uk.co.devinity.controllers;
+package uk.co.devinity.controllers.mvc;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import uk.co.devinity.entities.Entry;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.EntryRepository;

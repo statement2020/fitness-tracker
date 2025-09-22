@@ -1,4 +1,4 @@
-package uk.co.devinity.controllers;
+package uk.co.devinity.controllers.mvc;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

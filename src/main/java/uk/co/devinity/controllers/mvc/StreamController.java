@@ -1,4 +1,4 @@
-package uk.co.devinity.controllers;
+package uk.co.devinity.controllers.mvc;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;

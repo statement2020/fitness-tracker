@@ -38,6 +38,23 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
@@ -174,7 +191,7 @@
                         <param>uk.co.devinity.repositories.*</param>
                         <param>uk.co.devinity.FitnessTrackerApplication</param>
                         <param>uk.co.devinity.services.StreamServiceImpl</param>
-                        <param>uk.co.devinity.controllers.StreamController</param>
+                        <param>uk.co.devinity.controllers.mvc.StreamController</param>
                     </excludedClasses>
                     <outputFormats>
                         <param>HTML</param>

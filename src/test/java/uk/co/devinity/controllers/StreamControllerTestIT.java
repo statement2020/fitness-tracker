@@ -8,7 +8,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import uk.co.devinity.controllers.mvc.StreamController;
 import uk.co.devinity.repositories.UserRepository;
+import uk.co.devinity.services.JwtTokenServiceImpl;
 import uk.co.devinity.services.StreamService;
 
 import static org.mockito.Mockito.*;
@@ -29,6 +31,9 @@ class StreamControllerTestIT {
 
     @MockBean
     private BCryptPasswordEncoder passwordEncoder;
+
+    @MockBean
+    private JwtTokenServiceImpl jwtTokenService;
 
     @WithMockUser(username = "user", roles = {"USER"})
     @Test

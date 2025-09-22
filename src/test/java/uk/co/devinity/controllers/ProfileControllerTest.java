@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import uk.co.devinity.controllers.mvc.ProfileController;
 import uk.co.devinity.entities.User;
 import uk.co.devinity.repositories.UserRepository;
 import uk.co.devinity.services.ProfileService;

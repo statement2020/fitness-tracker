@@ -1,4 +1,4 @@
-package uk.co.devinity.controllers;
+package uk.co.devinity.controllers.mvc;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ControllerAdvice;
